@@ -1,7 +1,9 @@
 # Graph-Based Fraud Detection & Transaction Intelligence System
 
+**[Live demo](https://sannah-fraud-gnn.streamlit.app/)** · Python · PyTorch Geometric · GraphSAGE · XGBoost · NetworkX · FastAPI · Streamlit
+
 A solo-built fraud detection system that represents transactions as a graph
-(accounts, devices, merchants as nodes; transactions as edges), trains a
+(accounts as nodes, both customers and merchants; transactions as edges), trains a
 GraphSAGE GNN to learn what a normal account neighborhood looks like versus a
 suspicious one, combines that with an XGBoost tabular model into a hybrid
 fraud score, and uses community detection to surface clusters of connected
@@ -12,6 +14,22 @@ Built end-to-end in 3 days as a scoped-down prototype: NetworkX + PyTorch
 Geometric instead of a graph database, batch processing instead of Kafka
 streaming, a single FastAPI endpoint instead of a full production API, and a
 Streamlit dashboard instead of a custom investigator console.
+
+## Dashboard
+
+The [live dashboard](https://YOUR-APP-NAME.streamlit.app) has five tabs:
+
+| Tab | What it shows |
+|---|---|
+| 🔎 Investigate | Search any account to see its 2-hop transaction neighborhood, colored by GraphSAGE risk score, next to the most suspicious fraud rings |
+| 📊 Model results | PR-AUC for all six models, and feature importances showing the PaySim balance leak |
+| 💸 Fraud patterns | Fraud rate by transaction type, fraud vs legitimate amounts, fraud over time, and GraphSAGE score separation |
+| 🕸️ Ring detection | Every candidate Louvain community by size and fraud density, with the flagging threshold |
+| 💡 Key findings | The three main takeaways and the project's limitations |
+
+The deployed app reads precomputed results from `dashboard_data/` (about 17 MB),
+so it runs on Streamlit's free tier without PyTorch. Scoring new transactions
+runs through the FastAPI endpoint.
 
 ## Dataset
 
@@ -32,8 +50,9 @@ legitimate transactions (308,213 rows total, 2.66% fraud).
 | 5 | `scripts/prepare_hybrid_features.py` / `prepare_hardened_features.py` | Builds tabular + graph-embedding feature sets for XGBoost |
 | 6 | `scripts/train_xgboost.py` / `train_xgboost_hardened.py` / `train_score_hybrid.py` | Trains and compares tabular-only vs. hybrid XGBoost models |
 | 7 | `scripts/detect_communities.py` | Runs Louvain community detection to find fraud rings |
-| 8 | `api.py` | FastAPI endpoint that scores a single transaction |
-| 9 | `dashboard.py` | Streamlit dashboard: KPIs, account neighborhood explorer, suspicious ring table |
+| 8 | `scripts/export_dashboard_data.py` | Exports slim, deploy-ready results to `dashboard_data/` |
+| 9 | `api.py` | FastAPI endpoint that scores a single transaction |
+| 10 | `dashboard.py` | Streamlit dashboard (see above) |
 
 ## Results
 
@@ -78,22 +97,39 @@ real differentiator, not the transaction-level PR-AUC.
 
 ## Project structure
 
+```
 fraud-gnn-project/
-├── .streamlit/config.toml # dashboard theme
-├── data/ # gitignored -- regenerate via scripts below
-├── scripts/ # the full pipeline, in run order (see table above)
-├── api.py # FastAPI scoring endpoint
-├── dashboard.py # Streamlit dashboard
+├── .streamlit/config.toml     dashboard theme
+├── data/                      gitignored -- regenerate via the scripts below
+├── dashboard_data/            slim exported results used by the deployed dashboard
+├── scripts/                   the full pipeline, in run order (see table above)
+├── api.py                     FastAPI scoring endpoint
+├── dashboard.py               Streamlit dashboard
+├── requirements.txt           dashboard-only dependencies (for Streamlit Cloud)
 └── README.md
+```
 
 ## How to run it
 
-1. Create a virtual environment and install dependencies:
+**Just the dashboard** (uses the committed `dashboard_data/`):
+
+```bash
 python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install pandas networkx torch torch_geometric scikit-learn xgboost fastapi uvicorn streamlit plotly
+.\venv\Scripts\Activate.ps1        # macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+streamlit run dashboard.py
+```
+
+**The full pipeline:**
+
+1. Create a virtual environment and install dependencies:
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+   pip install pandas networkx torch torch_geometric scikit-learn xgboost fastapi uvicorn streamlit plotly pyarrow
+   ```
 2. Download [PaySim](https://www.kaggle.com/datasets/ntnu-testimon/paysim1) from Kaggle and place the CSV at `data/paysim.csv`.
-3. Run the pipeline scripts in the order listed in the table above.
+3. Run the pipeline scripts in the order listed in the table above, ending with `python scripts/export_dashboard_data.py`.
 4. Start the API: `uvicorn api:app --reload` -- test at `http://127.0.0.1:8000/docs`.
 5. Start the dashboard: `streamlit run dashboard.py`.
 
