@@ -1,0 +1,8 @@
+# Dashboard only (used by Streamlit Cloud). The full training pipeline needs
+# more: see "How to run it" in README.md.
+streamlit>=1.48
+pandas>=2.0
+numpy>=1.24
+networkx>=3.0
+plotly>=5.18
+pyarrow>=14.0

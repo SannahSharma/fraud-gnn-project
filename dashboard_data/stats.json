@@ -1,0 +1,20 @@
+{
+  "graphsage_pr_auc": 0.2521,
+  "tabular_pr_auc": 0.9961976962078235,
+  "hybrid_pr_auc": 0.996249400741004,
+  "improvement_pct": 0.005190187989523224,
+  "hardened_tabular_pr_auc": 0.8832293421726879,
+  "hardened_hybrid_pr_auc": 0.8769982886587046,
+  "hardened_improvement_pct": -0.7054853384575458,
+  "score_hybrid_tabular_pr_auc": 0.8832293421726879,
+  "score_hybrid_pr_auc": 0.8816945876987969,
+  "score_hybrid_improvement_pct": -0.17376624627478468,
+  "ring_detection_recall": 0.17128555731900866,
+  "num_communities": 111629,
+  "num_flagged_communities": 1381,
+  "num_nodes": 562370,
+  "num_edges": 308213,
+  "overall_fraud_rate": 0.029130287888756514,
+  "flag_threshold": 0.14565143944378256,
+  "num_fraud_accounts": 16382
+}
